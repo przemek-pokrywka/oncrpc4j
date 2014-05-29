@@ -19,6 +19,8 @@
  */
 package org.dcache.xdr;
 
+import com.google.common.base.Optional;
+import static com.google.common.base.Optional.*;
 import static com.google.common.base.Preconditions.*;
 
 
@@ -53,6 +55,7 @@ public class OncRpcSvcBuilder {
     private boolean _withJMX = false;
     private int _backlog = 4096;
     private String _bindAddress = "0.0.0.0";
+    private Optional<PoolSizeBounds> _workerPoolSizeBounds = absent();
 
     public OncRpcSvcBuilder withAutoPublish() {
         _autoPublish = true;
@@ -104,6 +107,12 @@ public class OncRpcSvcBuilder {
         return this;
     }
 
+    public OncRpcSvcBuilder withWorkerThreadIoStrategy(PoolSizeBounds poolSizeBounds) {
+        withWorkerThreadIoStrategy();
+        _workerPoolSizeBounds = fromNullable(poolSizeBounds);
+        return this;
+    }
+
     public OncRpcSvcBuilder withJMX() {
         _withJMX = true;
         return this;
@@ -149,6 +158,10 @@ public class OncRpcSvcBuilder {
 
     public String getBindAddress() {
         return _bindAddress;
+    }
+
+    public Optional<PoolSizeBounds> getWorkerPoolSizeBounds() {
+        return _workerPoolSizeBounds;
     }
 
     public OncRpcSvc build() {

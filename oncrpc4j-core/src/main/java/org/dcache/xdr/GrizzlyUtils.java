@@ -19,6 +19,7 @@
  */
 package org.dcache.xdr;
 
+import com.google.common.base.Optional;
 import org.glassfish.grizzly.IOStrategy;
 import org.glassfish.grizzly.Transport;
 import org.glassfish.grizzly.filterchain.Filter;
@@ -27,6 +28,7 @@ import org.glassfish.grizzly.nio.transport.UDPNIOTransport;
 import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
 import org.glassfish.grizzly.strategies.WorkerThreadIOStrategy;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
+import static org.dcache.xdr.PoolSizeBounds.exactly;
 
 /**
  * Class with utility methods for Grizzly
@@ -98,18 +100,25 @@ public class GrizzlyUtils {
      * Pre-configure Worker thread pool for given {@link IOStrategy}
      *
      * @param ioStrategy in use
+     * @param boundsSetByUser core and max pool size optionally specified by user
      * @return thread pool configuration or {@code null}, if ioStrategy don't
      * supports worker threads.
      */
-    static ThreadPoolConfig getWorkerPoolCfg(IOStrategy ioStrategy) {
+    static ThreadPoolConfig getWorkerPoolCfg(IOStrategy ioStrategy, Optional<PoolSizeBounds> boundsSetByUser) {
 
 	if (ioStrategy == SameThreadIOStrategy.getInstance()) {
 	    return null;
 	}
 
-	final int poolSize = getWorkerPoolSize(ioStrategy);
+    final int defaultPoolSize = getWorkerPoolSize(ioStrategy);
+    final PoolSizeBounds defaultBounds = exactly(defaultPoolSize);
+
+    final PoolSizeBounds bounds = boundsSetByUser.or(defaultBounds);
+    final int coreSize = bounds.getCoreSize();
+    final int maxSize = bounds.getMaxSize();
+
 	final ThreadPoolConfig poolCfg = ThreadPoolConfig.defaultConfig();
-	poolCfg.setCorePoolSize(poolSize).setMaxPoolSize(poolSize);
+    poolCfg.setCorePoolSize(coreSize).setMaxPoolSize(maxSize);
 	poolCfg.setPoolName("OncRpcSvc Worker thread");
 
 	return poolCfg;

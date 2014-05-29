@@ -110,7 +110,7 @@ public class OncRpcSvc {
 
         IOStrategy grizzlyIoStrategy = builder.getIoStrategy().getStrategy();
         ThreadPoolConfig selectorPoolConfig = getSelectorPoolCfg(grizzlyIoStrategy);
-        ThreadPoolConfig workerPoolConfig = getWorkerPoolCfg(grizzlyIoStrategy);
+        ThreadPoolConfig workerPoolConfig = getWorkerPoolCfg(grizzlyIoStrategy, builder.getWorkerPoolSizeBounds());
 
         if ((protocol & IpProtocolType.TCP) != 0) {
             final TCPNIOTransport tcpTransport = TCPNIOTransportBuilder
